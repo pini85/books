@@ -1,36 +1,44 @@
-import React, { useId, lazy } from "react";
-const Card = lazy(() => import("./Card"));
-// import Card from "./Card";
-const BookList = ({ data }) => {
-  //custom hook that returns the data. redux selector. the selector will give me exactly what i need.redux selector specific for my view. can you spread.
-  const { data, loading, error } = useBookList();
+import React, { lazy } from "react";
+import useBookList from "../../../features/books/useBooks";
+import get from "lodash/get";
 
+const Card = lazy(() => import("./Card"));
+
+const BookList = () => {
+  const { bookItems, loading, error } = useBookList();
+  console.log("bookItems", bookItems);
+
+  if (!bookItems) return;
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  console.log(data);
-  const renderBooks = (data) => {
-    return data.items.map((book) => {
-      const id = useId(); //lets pretend you get no id from the api
-      const bookName = book.volumeInfo.title;
-      const bookAuthors = book.volumeInfo.authors;
-      const bookImage =
-        //use lodash get here
-        book.volumeInfo?.imageLinks?.thumbnail ||
-        "https://images-na.ssl-images-amazon.com/images/I/51fRKyqPWDL.jpg";
-      return (
-        <React.Suspense key={id} fallback={<div>Loading Card...</div>}>
-          <Card
-            key={id}
-            image={bookImage}
-            authors={bookAuthors}
-            name={bookName}
-          />
-        </React.Suspense>
-      );
-    });
-  };
-  //no function
-  return <div>{renderBooks(data)}</div>;
+  return (
+    <div>
+      {bookItems.map((book, index) => {
+        const bookName = book.volumeInfo.title;
+        const bookAuthors = book.volumeInfo.authors;
+        const defaultImage =
+          "https://images-na.ssl-images-amazon.com/images/I/51fRKyqPWDL.jpg";
+        const bookImage = get(
+          book,
+          "volumeInfo.imageLinks.thumbnail",
+          defaultImage
+        );
+        const key = book.id || index;
+
+        return (
+          <React.Suspense key={key} fallback={<div>Loading Card...</div>}>
+            <Card
+              key={key}
+              image={bookImage}
+              authors={bookAuthors}
+              name={bookName}
+            />
+          </React.Suspense>
+        );
+      })}
+    </div>
+  );
 };
+
 export default BookList;
