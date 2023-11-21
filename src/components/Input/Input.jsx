@@ -23,6 +23,7 @@ const InputComponent = ({
   }, [autoFocus]);
 
   const handleChange = (e) => {
+    //i remember you said something about this which wasnt good?
     const sanitizedValue = sanitizeInput(e.target.value);
 
     if (onChange) {
